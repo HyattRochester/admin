@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyatt Admin Portal</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+:root {
+    --bg: #0f172a;
+    --bg-soft: #111827;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --gold: #c5a880;
+    --green: #22c55e;
+    --red: #ef4444;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    background:linear-gradient(135deg,#0b1220,#111827);
+    color:var(--text);
+    min-height:100vh;
+}
+
+.admin-container{
+    display:flex;
+    min-height:100vh;
+}
+
+/* Sidebar */
+.sidebar{
+    width:250px;
+    background:rgba(0,0,0,0.25);
+    border-right:1px solid var(--border);
+    padding:24px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.sidebar h2{
+    font-family:'Playfair Display',serif;
+    font-size:1.8rem;
+    color:var(--gold);
+}
+
+.sidebar p{
+    color:var(--muted);
+    font-size:0.9rem;
+    margin-bottom:10px;
+}
+
+.sidebar nav{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.menu-btn{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:12px 14px;
+    border-radius:12px;
+    text-align:left;
+    cursor:pointer;
+    transition:all .2s ease;
+    font-weight:600;
+}
+
+.menu-btn:hover,
+.menu-btn.active{
+    background:rgba(197,168,128,0.15);
+    border-color:var(--gold);
+    color:var(--gold);
+}
+
+.menu-btn.logout:hover{
+    background:rgba(239,68,68,0.15);
+    border-color:var(--red);
+    color:#fecaca;
+}
+
+/* Content */
+.content{
+    flex:1;
+    padding:28px;
+}
+
+.top-header{
+    margin-bottom:24px;
+}
+
+.top-header h1{
+    font-size:2rem;
+    margin-bottom:6px;
+}
+
+.top-header p{
+    color:var(--muted);
+}
+
+/* Stats */
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.stat-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+    backdrop-filter:blur(12px);
+}
+
+.stat-card h3{
+    color:var(--muted);
+    font-size:0.9rem;
+    margin-bottom:8px;
+}
+
+.stat-card h2{
+    font-size:2rem;
+    color:var(--gold);
+}
+
+/* Search */
+.search-box{
+    margin-bottom:24px;
+}
+
+.search-box input{
+    width:100%;
+    padding:14px 16px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,0.03);
+    color:var(--text);
+    font-size:0.95rem;
+    outline:none;
+}
+
+.search-box input:focus{
+    border-color:var(--gold);
+}
+
+/* Cards */
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:22px;
+    margin-bottom:24px;
+    backdrop-filter:blur(14px);
+}
+
+.card h2{
+    margin-bottom:16px;
+    color:var(--gold);
+    font-size:1.1rem;
+}
+
+/* Applicant item */
+.applicant-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:14px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+.applicant-item:last-child{
+    border-bottom:none;
+}
+
+.applicant-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.applicant-name{
+    font-weight:700;
+}
+
+.applicant-meta{
+    color:var(--muted);
+    font-size:0.88rem;
+}
+
+.status-badge{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:0.78rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+}
+
+.status-pending{
+    background:rgba(234,179,8,0.18);
+    color:#fde68a;
+    border:1px solid rgba(234,179,8,0.28);
+}
+
+.status-approved{
+    background:rgba(34,197,94,0.18);
+    color:#bbf7d0;
+    border:1px solid rgba(34,197,94,0.28);
+}
+
+.status-rejected{
+    background:rgba(239,68,68,0.18);
+    color:#fecaca;
+    border:1px solid rgba(239,68,68,0.28);
+}
+
+.open-btn{
+    background:var(--gold);
+    color:#111827;
+    border:none;
+    padding:10px 14px;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.open-btn:hover{
+    filter:brightness(1.05);
+}
+
+.empty-state{
+    color:var(--muted);
+    text-align:center;
+    padding:20px 0;
+}
+
+@media(max-width:900px){
+    .admin-container{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        border-right:none;
+        border-bottom:1px solid var(--border);
+    }
+
+    .content{
+        padding:18px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+    <div id="adminLogin" style="max-width:420px;margin:80px auto;padding:30px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;">
+    <h2 style="color:#c5a880;margin-bottom:20px;text-align:center;">Admin Login</h2>
+
+    <input id="adminEmail" type="email" placeholder="Admin email"
+        style="width:100%;padding:14px;margin-bottom:15px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;">
+
+    <input id="adminPassword" type="password" placeholder="Password"
+        style="width:100%;padding:14px;margin-bottom:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;">
+
+    <button id="adminLoginBtn"
+        style="width:100%;padding:14px;border:none;border-radius:14px;background:#c5a880;color:#111827;font-weight:700;cursor:pointer;">
+        Login
+    </button>
+
+    <p id="adminLoginMsg" style="text-align:center;margin-top:15px;color:#f87171;"></p>
+</div>
+
+<div class="admin-container" id="adminPanel" style="display:none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <h2>HYATT</h2>
+        <p>Admin Portal</p>
+
+        <nav>
+
+            <button class="menu-btn active">
+                📊 Dashboard
+            </button>
+
+            <button class="menu-btn">
+                👥 Applicants
+            </button>
+
+            <button class="menu-btn">
+                📥 New Applications
+            </button>
+
+            <button class="menu-btn">
+                📈 Statistics
+            </button>
+
+            <button class="menu-btn logout">
+                🚪 Logout
+            </button>
+
+        </nav>
+
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+
+        <header class="top-header">
+
+            <div>
+
+                <h1>Applicant Management</h1>
+
+                <p>
+                    Welcome Administrator
+                </p>
+
+            </div>
+
+        </header>
+
+        <!-- Statistics -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <h3>Total Applicants</h3>
+
+                <h2 id="totalApplicants">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Pending</h3>
+
+                <h2 id="pendingApplicants">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Approved</h3>
+
+                <h2 id="approvedApplicants">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Rejected</h3>
+
+                <h2 id="rejectedApplicants">
+                    0
+                </h2>
+
+            </div>
+
+        </section>
+
+        <!-- Search -->
+
+        <section class="search-box">
+
+            <input
+                type="text"
+                id="searchApplicant"
+                placeholder="Search applicant by name, email or phone...">
+
+        </section>
+
+        <!-- New Applicants -->
+
+        <section class="card">
+
+            <h2>
+                🆕 New Applicants
+            </h2>
+
+            <div id="newApplicants">
+
+                <!-- Firebase will load applicants here -->
+
+            </div>
+
+        </section>
+
+        <!-- All Applicants -->
+
+        <section class="card">
+
+            <h2>
+                👥 All Applicants
+            </h2>
+
+            <div id="allApplicants">
+
+                <!-- Firebase loads all applicants -->
+
+            </div>
+
+        </section>
+
+        <!-- Applicant Editor -->
+<section class="card" id="editorSection" style="display:none;">
+
+    <h2>📝 Edit Applicant</h2>
+
+    <div class="editor-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+
+        <div>
+            <label>Applicant Name</label>
+            <input id="editName" type="text" disabled>
+        </div>
+
+        <div>
+            <label>Email</label>
+            <input id="editEmail" type="email" disabled>
+        </div>
+
+        <div>
+            <label>Phone</label>
+            <input id="editPhone" type="text" disabled>
+        </div>
+
+        <div>
+            <label>Country</label>
+            <input id="editCountry" type="text" disabled>
+        </div>
+
+        <div>
+            <label>Education</label>
+            <input id="editEducation" type="text" disabled>
+        </div>
+
+        <div>
+            <label>Occupation</label>
+            <input id="editOccupation" type="text" disabled>
+        </div>
+
+        <div>
+            <label>Application Status</label>
+            <select id="editStatus">
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Interview Scheduled">Interview Scheduled</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Application Code</label>
+            <input id="editCode" type="text" placeholder="HYA-2026-001">
+        </div>
+
+        <div>
+            <label>Date Applied</label>
+            <input id="editDate" type="text" placeholder="01 Aug 2026">
+        </div>
+
+    </div>
+
+    <div style="margin-top:18px;">
+        <label>Information Message</label>
+        <textarea id="editMessage" rows="5" style="width:100%;padding:14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:white;"></textarea>
+    </div>
+
+    <div style="margin-top:18px;">
+        <label>Information Link</label>
+        <input id="editInfoLink" type="url" placeholder="https://...">
+    </div>
+
+    <div style="margin-top:18px;">
+        <label>View Application Link</label>
+        <input id="editViewLink" type="url" placeholder="https://...">
+    </div>
+
+    <button id="saveApplicantBtn" style="margin-top:24px;width:100%;padding:16px;border:none;border-radius:16px;background:#c5a880;color:#111827;font-weight:800;font-size:1rem;cursor:pointer;">
+        SAVE CHANGES
+    </button>
+
+    <p id="saveMessage" style="text-align:center;margin-top:14px;color:#4ade80;font-weight:600;"></p>
+
+</section>
+
+        <section class="card">
+
+            <h2>👤 Applicant Details</h2>
+
+            <div class="details-grid">
+
+                <label>Full Name</label>
+                <input type="text" id="fullName">
+
+                <label>Email</label>
+                <input type="email" id="email">
+
+                <label>Phone</label>
+                <input type="text" id="phone">
+
+                <label>Country</label>
+                <input type="text" id="country">
+
+                <label>Education</label>
+                <input type="text" id="education">
+
+                <label>Occupation</label>
+                <input type="text" id="occupation">
+
+                <label>Application Status</label>
+
+                <select id="applicationStatus">
+
+                    <option>New Applicant</option>
+                    <option>Application Received</option>
+                    <option>Under Review</option>
+                    <option>Interview Scheduled</option>
+                    <option>Interview Completed</option>
+                    <option>Documents Required</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+                    <option>Job Offer Sent</option>
+
+                </select>
+
+                <label>Application Code</label>
+
+                <input
+                    type="text"
+                    id="applicationCode">
+
+                <label>Date Applied</label>
+
+                <input
+                    type="text"
+                    id="dateApplied">
+
+            </div>
+
+        </section>
+
+        <!-- Applicant Information -->
+
+        <section class="card">
+
+            <h2>📢 Applicant Information</h2>
+
+            <label>Information Message</label>
+
+            <textarea
+                id="infoMessage"
+                rows="6"
+                placeholder="Type applicant information here..."></textarea>
+
+            <label>Information Button Link</label>
+
+            <input
+                type="text"
+                id="infoLink"
+                placeholder="https://">
+
+            <label>Application Button Link</label>
+
+            <input
+                type="text"
+                id="viewAppLink"
+                placeholder="https://">
+
+            <button id="saveChanges">
+
+                💾 Save Changes
+
+            </button>
+
+        </section>
+
+
+        <!-- Applicant Documents -->
+
+        <section class="card">
+
+            <h2>📂 Applicant Documents</h2>
+
+            <div class="document-box">
+
+                <p id="documentStatus">
+                    No documents uploaded yet.
+                </p>
+
+                <a
+                    id="documentLink"
+                    href="#"
+                    target="_blank"
+                    class="document-btn"
+                    style="display:none;">
+
+                    📄 View Uploaded Document
+
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<!-- ADD FIREBASE AND admin.js HERE -->
+
+<script type="module" src="admin.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    onSnapshot,
+    doc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyCsZbX8doOr6DxT7C9p8SK6YReKKlyVcNI",
+    authDomain: "hyatt-regency-afc7e.firebaseapp.com",
+    projectId: "hyatt-regency-afc7e",
+    storageBucket: "hyatt-regency-afc7e.firebasestorage.app",
+    messagingSenderId: "636460619228",
+    appId: "1:636460619228:web:5734324ff28ca738f4eb19",
+    measurementId: "G-K5KTLSKDRN"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Allowed admin email
+const ADMIN_EMAIL = "fransescomarie@gmail.com";
+
+const loginBox = document.getElementById("adminLogin");
+const adminPanel = document.getElementById("adminPanel");
+const loginMsg = document.getElementById("adminLoginMsg");
+
+document.getElementById("adminLoginBtn").onclick = async () => {
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+
+    loginMsg.innerText = "";
+
+    if (email !== ADMIN_EMAIL) {
+        loginMsg.innerText = "Unauthorized admin email.";
+        return;
+    }
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+
+        loginBox.style.display = "none";
+        adminPanel.style.display = "flex";
+
+        loadApplicants();
+
+    } catch (error) {
+        loginMsg.innerText = "Invalid email or password.";
+    }
+};
+
+// Logout button
+document.querySelector(".logout").onclick = async () => {
+    await signOut(auth);
+    window.location.href = "index.html";
+};
+
+let applicantsCache = [];
+
+// Load all applicants in real time
+function loadApplicants() {
+    const applicantsRef = collection(db, "Applicants");
+
+    onSnapshot(applicantsRef, (snapshot) => {
+        applicantsCache = [];
+
+        snapshot.forEach((docSnap) => {
+            applicantsCache.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
+
+        renderApplicants(applicantsCache);
+        renderNewApplicants(applicantsCache);
+        updateStatistics(applicantsCache);
+    });
+}
+
+// Statistics
+function updateStatistics(applicants) {
+    totalApplicantsEl.innerText = applicants.length;
+
+    let pending = 0;
+    let approved = 0;
+    let rejected = 0;
+
+    applicants.forEach(app => {
+        const status = (app.applicationStatus || "").toLowerCase();
+
+        if (status.includes("approved")) approved++;
+        else if (status.includes("rejected")) rejected++;
+        else pending++;
+    });
+
+    pendingApplicantsEl.innerText = pending;
+    approvedApplicantsEl.innerText = approved;
+    rejectedApplicantsEl.innerText = rejected;
+}
+
+// Render all applicants
+function renderApplicants(applicants) {
+    if (applicants.length === 0) {
+        allApplicantsDiv.innerHTML =
+            '<div class="empty-state">No applicants found</div>';
+        return;
+    }
+
+    allApplicantsDiv.innerHTML = applicants.map(app => {
+        const status = app.applicationStatus || "Pending";
+
+        let statusClass = "status-pending";
+        if (status.toLowerCase().includes("approved"))
+            statusClass = "status-approved";
+        if (status.toLowerCase().includes("rejected"))
+            statusClass = "status-rejected";
+
+        return `
+            <div class="applicant-item">
+                <div class="applicant-info">
+                    <div class="applicant-name">${app.fullName || 'No Name'}</div>
+                    <div class="applicant-meta">${app.email || ''}</div>
+                    <div class="applicant-meta">${app.phone || ''}</div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+                    <span class="status-badge ${statusClass}">${status}</span>
+                    <button class="open-btn" onclick="openApplicant('${app.id}')">
+                        Open
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Render newest applicants (latest 5)
+function renderNewApplicants(applicants) {
+    const newest = [...applicants].slice(-5).reverse();
+
+    if (newest.length === 0) {
+        newApplicantsDiv.innerHTML =
+            '<div class="empty-state">No new applicants</div>';
+        return;
+    }
+
+    newApplicantsDiv.innerHTML = newest.map(app => `
+        <div class="applicant-item">
+            <div class="applicant-info">
+                <div class="applicant-name">${app.fullName || 'No Name'}</div>
+                <div class="applicant-meta">${app.email || ''}</div>
+            </div>
+
+            <button class="open-btn" onclick="openApplicant('${app.id}')">
+                Open
+            </button>
+        </div>
+    `).join('');
+}
+
+const allApplicantsDiv = document.getElementById("allApplicants");
+const newApplicantsDiv = document.getElementById("newApplicants");
+
+const searchInput = document.getElementById("searchApplicant");
+
+const totalApplicantsEl = document.getElementById("totalApplicants");
+const pendingApplicantsEl = document.getElementById("pendingApplicants");
+const approvedApplicantsEl = document.getElementById("approvedApplicants");
+const rejectedApplicantsEl = document.getElementById("rejectedApplicants");
+
+// Search applicants
+searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+
+    const filtered = applicantsCache.filter(app =>
+        (app.fullName || '').toLowerCase().includes(term) ||
+        (app.email || '').toLowerCase().includes(term) ||
+        (app.phone || '').toLowerCase().includes(term)
+    );
+
+    renderApplicants(filtered);
+});
+
+let selectedApplicantId = null;
+
+window.openApplicant = function(id) {
+
+    const applicant = applicantsCache.find(app => app.id === id);
+
+    if (!applicant) return;
+
+    selectedApplicantId = id;
+
+    // Show editor
+    document.getElementById("editorSection").style.display = "block";
+
+    // Fill fields
+    document.getElementById("editName").value = applicant.fullName || "";
+    document.getElementById("editEmail").value = applicant.email || "";
+    document.getElementById("editPhone").value = applicant.phone || "";
+    document.getElementById("editCountry").value = applicant.country || "";
+    document.getElementById("editEducation").value = applicant.education || "";
+    document.getElementById("editOccupation").value = applicant.occupation || "";
+
+    document.getElementById("editStatus").value =
+        applicant.applicationStatus || "Pending";
+
+    document.getElementById("editCode").value =
+        applicant.applicationCode || "";
+
+    document.getElementById("editDate").value =
+        applicant.dateApplied || "";
+
+    document.getElementById("editMessage").value =
+        applicant.infoMessage || "";
+
+    document.getElementById("editInfoLink").value =
+        applicant.infoLink || "";
+
+    document.getElementById("editViewLink").value =
+        applicant.viewAppLink || "";
+
+    // Scroll to editor
+    document.getElementById("editorSection")
+        .scrollIntoView({ behavior: "smooth" });
+};
+
+</script>
+</body>
+</html>
