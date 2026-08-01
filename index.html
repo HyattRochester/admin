@@ -180,7 +180,7 @@ body{
 /* Applicant item */
 .applicant-item{
     display:flex;
-    justify-content:space-between;
+    justify-space-between;
     align-items:center;
     gap:12px;
     padding:14px 0;
@@ -253,6 +253,73 @@ body{
     padding:20px 0;
 }
 
+/* Form Styling */
+.editor-grid label, section.card label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.editor-grid input, .editor-grid select, section.card input, section.card select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    color: white;
+    outline: none;
+}
+
+.editor-grid input:focus, .editor-grid select:focus, section.card textarea:focus {
+    border-color: var(--gold);
+}
+
+.editor-grid select option {
+    background: #111827;
+    color: white;
+}
+
+/* Custom Success Toast Popup */
+.toast-popup {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: rgba(17, 24, 39, 0.95);
+    border: 1px solid var(--green);
+    color: #ffffff;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9999;
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
+}
+
+.toast-popup.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
 @media(max-width:900px){
     .admin-container{
         flex-direction:column;
@@ -273,610 +340,449 @@ body{
 
 <body>
 
+    <!-- Toast Notification Popup -->
+    <div id="toastPopup" class="toast-popup">
+        <div class="toast-icon">✓</div>
+        <div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #bbf7d0;">Success</div>
+            <div style="font-size: 0.85rem; color: var(--muted);" id="toastMsg">Updated Successfully!</div>
+        </div>
+    </div>
+
+    <!-- Admin Login -->
     <div id="adminLogin" style="max-width:420px;margin:80px auto;padding:30px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;">
-    <h2 style="color:#c5a880;margin-bottom:20px;text-align:center;">Admin Login</h2>
+        <h2 style="color:#c5a880;margin-bottom:20px;text-align:center;">Admin Login</h2>
 
-    <input id="adminEmail" type="email" placeholder="Admin email"
-        style="width:100%;padding:14px;margin-bottom:15px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;">
+        <input id="adminEmail" type="email" placeholder="Admin email"
+            style="width:100%;padding:14px;margin-bottom:15px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;">
 
-    <input id="adminPassword" type="password" placeholder="Password"
-        style="width:100%;padding:14px;margin-bottom:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;">
+        <input id="adminPassword" type="password" placeholder="Password"
+            style="width:100%;padding:14px;margin-bottom:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;">
 
-    <button id="adminLoginBtn"
-        style="width:100%;padding:14px;border:none;border-radius:14px;background:#c5a880;color:#111827;font-weight:700;cursor:pointer;">
-        Login
-    </button>
+        <button id="adminLoginBtn"
+            style="width:100%;padding:14px;border:none;border-radius:14px;background:#c5a880;color:#111827;font-weight:700;cursor:pointer;">
+            Login
+        </button>
 
-    <p id="adminLoginMsg" style="text-align:center;margin-top:15px;color:#f87171;"></p>
-</div>
-
-<div class="admin-container" id="adminPanel" style="display:none;">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-
-        <h2>HYATT</h2>
-        <p>Admin Portal</p>
-
-        <nav>
-
-            <button class="menu-btn active">
-                📊 Dashboard
-            </button>
-
-            <button class="menu-btn">
-                👥 Applicants
-            </button>
-
-            <button class="menu-btn">
-                📥 New Applications
-            </button>
-
-            <button class="menu-btn">
-                📈 Statistics
-            </button>
-
-            <button class="menu-btn logout">
-                🚪 Logout
-            </button>
-
-        </nav>
-
-    </aside>
-
-    <!-- Main Content -->
-    <main class="content">
-
-        <header class="top-header">
-
-            <div>
-
-                <h1>Applicant Management</h1>
-
-                <p>
-                    Welcome Administrator
-                </p>
-
-            </div>
-
-        </header>
-
-        <!-- Statistics -->
-
-        <section class="stats-grid">
-
-            <div class="stat-card">
-
-                <h3>Total Applicants</h3>
-
-                <h2 id="totalApplicants">
-                    0
-                </h2>
-
-            </div>
-
-            <div class="stat-card">
-
-                <h3>Pending</h3>
-
-                <h2 id="pendingApplicants">
-                    0
-                </h2>
-
-            </div>
-
-            <div class="stat-card">
-
-                <h3>Approved</h3>
-
-                <h2 id="approvedApplicants">
-                    0
-                </h2>
-
-            </div>
-
-            <div class="stat-card">
-
-                <h3>Rejected</h3>
-
-                <h2 id="rejectedApplicants">
-                    0
-                </h2>
-
-            </div>
-
-        </section>
-
-        <!-- Search -->
-
-        <section class="search-box">
-
-            <input
-                type="text"
-                id="searchApplicant"
-                placeholder="Search applicant by name, email or phone...">
-
-        </section>
-
-        <!-- New Applicants -->
-
-        <section class="card">
-
-            <h2>
-                🆕 New Applicants
-            </h2>
-
-            <div id="newApplicants">
-
-                <!-- Firebase will load applicants here -->
-
-            </div>
-
-        </section>
-
-        <!-- All Applicants -->
-
-        <section class="card">
-
-            <h2>
-                👥 All Applicants
-            </h2>
-
-            <div id="allApplicants">
-
-                <!-- Firebase loads all applicants -->
-
-            </div>
-
-        </section>
-
-        <!-- Applicant Editor -->
-<section class="card" id="editorSection" style="display:none;">
-
-    <h2>📝 Edit Applicant</h2>
-
-    <div class="editor-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
-
-        <div>
-            <label>Applicant Name</label>
-            <input id="editName" type="text" disabled>
-        </div>
-
-        <div>
-            <label>Email</label>
-            <input id="editEmail" type="email" disabled>
-        </div>
-
-        <div>
-            <label>Phone</label>
-            <input id="editPhone" type="text" disabled>
-        </div>
-
-        <div>
-            <label>Country</label>
-            <input id="editCountry" type="text" disabled>
-        </div>
-
-        <div>
-            <label>Education</label>
-            <input id="editEducation" type="text" disabled>
-        </div>
-
-        <div>
-            <label>Occupation</label>
-            <input id="editOccupation" type="text" disabled>
-        </div>
-
-        <div>
-            <label>Application Status</label>
-            <select id="editStatus">
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Interview Scheduled">Interview Scheduled</option>
-            </select>
-        </div>
-
-        <div>
-            <label>Application Code</label>
-            <input id="editCode" type="text" placeholder="HYA-2026-001">
-        </div>
-
-        <div>
-            <label>Date Applied</label>
-            <input id="editDate" type="text" placeholder="01 Aug 2026">
-        </div>
-
+        <p id="adminLoginMsg" style="text-align:center;margin-top:15px;color:#f87171;"></p>
     </div>
 
-    <div style="margin-top:18px;">
-        <label>Information Message</label>
-        <textarea id="editMessage" rows="5" style="width:100%;padding:14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:white;"></textarea>
-    </div>
+    <div class="admin-container" id="adminPanel" style="display:none;">
 
-    <div style="margin-top:18px;">
-        <label>Information Link</label>
-        <input id="editInfoLink" type="url" placeholder="https://...">
-    </div>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h2>HYATT</h2>
+            <p>Admin Portal</p>
 
-    <div style="margin-top:18px;">
-        <label>View Application Link</label>
-        <input id="editViewLink" type="url" placeholder="https://...">
-    </div>
+            <nav>
+                <button class="menu-btn active">📊 Dashboard</button>
+                <button class="menu-btn">👥 Applicants</button>
+                <button class="menu-btn">📥 New Applications</button>
+                <button class="menu-btn">📈 Statistics</button>
+                <button class="menu-btn logout">🚪 Logout</button>
+            </nav>
+        </aside>
 
-    <button id="saveApplicantBtn" style="margin-top:24px;width:100%;padding:16px;border:none;border-radius:16px;background:#c5a880;color:#111827;font-weight:800;font-size:1rem;cursor:pointer;">
-        SAVE CHANGES
-    </button>
+        <!-- Main Content -->
+        <main class="content">
 
-    <p id="saveMessage" style="text-align:center;margin-top:14px;color:#4ade80;font-weight:600;"></p>
+            <header class="top-header">
+                <div>
+                    <h1>Applicant Management</h1>
+                    <p>Welcome Administrator</p>
+                </div>
+            </header>
 
-</section>
+            <!-- Statistics -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Applicants</h3>
+                    <h2 id="totalApplicants">0</h2>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending</h3>
+                    <h2 id="pendingApplicants">0</h2>
+                </div>
+                <div class="stat-card">
+                    <h3>Approved</h3>
+                    <h2 id="approvedApplicants">0</h2>
+                </div>
+                <div class="stat-card">
+                    <h3>Rejected</h3>
+                    <h2 id="rejectedApplicants">0</h2>
+                </div>
+            </section>
 
-        <section class="card">
-
-            <h2>👤 Applicant Details</h2>
-
-            <div class="details-grid">
-
-                <label>Full Name</label>
-                <input type="text" id="fullName">
-
-                <label>Email</label>
-                <input type="email" id="email">
-
-                <label>Phone</label>
-                <input type="text" id="phone">
-
-                <label>Country</label>
-                <input type="text" id="country">
-
-                <label>Education</label>
-                <input type="text" id="education">
-
-                <label>Occupation</label>
-                <input type="text" id="occupation">
-
-                <label>Application Status</label>
-
-                <select id="applicationStatus">
-
-                    <option>New Applicant</option>
-                    <option>Application Received</option>
-                    <option>Under Review</option>
-                    <option>Interview Scheduled</option>
-                    <option>Interview Completed</option>
-                    <option>Documents Required</option>
-                    <option>Approved</option>
-                    <option>Rejected</option>
-                    <option>Job Offer Sent</option>
-
-                </select>
-
-                <label>Application Code</label>
-
+            <!-- Search -->
+            <section class="search-box">
                 <input
                     type="text"
-                    id="applicationCode">
+                    id="searchApplicant"
+                    placeholder="Search applicant by name, email or phone...">
+            </section>
 
-                <label>Date Applied</label>
+            <!-- New Applicants (Shows strictly ONLY the newest applicant) -->
+            <section class="card">
+                <h2>🆕 Most Recent Applicant</h2>
+                <div id="newApplicants">
+                    <!-- Loaded dynamically from Firebase -->
+                </div>
+            </section>
 
-                <input
-                    type="text"
-                    id="dateApplied">
+            <!-- All Applicants -->
+            <section class="card">
+                <h2>👥 All Applicants</h2>
+                <div id="allApplicants">
+                    <!-- Firebase loads all applicants -->
+                </div>
+            </section>
 
-            </div>
+            <!-- Applicant Editor -->
+            <section class="card" id="editorSection" style="display:none;">
+                <h2>📝 Edit Applicant</h2>
 
-        </section>
+                <div class="editor-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+                    <div>
+                        <label>Applicant Name</label>
+                        <input id="editName" type="text" disabled>
+                    </div>
 
-        <!-- Applicant Information -->
+                    <div>
+                        <label>Email</label>
+                        <input id="editEmail" type="email" disabled>
+                    </div>
 
-        <section class="card">
+                    <div>
+                        <label>Phone</label>
+                        <input id="editPhone" type="text" disabled>
+                    </div>
 
-            <h2>📢 Applicant Information</h2>
+                    <div>
+                        <label>Country</label>
+                        <input id="editCountry" type="text" disabled>
+                    </div>
 
-            <label>Information Message</label>
+                    <div>
+                        <label>Education</label>
+                        <input id="editEducation" type="text" disabled>
+                    </div>
 
-            <textarea
-                id="infoMessage"
-                rows="6"
-                placeholder="Type applicant information here..."></textarea>
+                    <div>
+                        <label>Occupation</label>
+                        <input id="editOccupation" type="text" disabled>
+                    </div>
 
-            <label>Information Button Link</label>
+                    <div>
+                        <label>Application Status</label>
+                        <select id="editStatus">
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Interview Scheduled">Interview Scheduled</option>
+                        </select>
+                    </div>
 
-            <input
-                type="text"
-                id="infoLink"
-                placeholder="https://">
+                    <div>
+                        <label>Application Code</label>
+                        <input id="editCode" type="text" placeholder="HYA-2026-001">
+                    </div>
 
-            <label>Application Button Link</label>
+                    <div>
+                        <label>Date Applied</label>
+                        <input id="editDate" type="text" placeholder="01 Aug 2026">
+                    </div>
+                </div>
 
-            <input
-                type="text"
-                id="viewAppLink"
-                placeholder="https://">
+                <div style="margin-top:18px;">
+                    <label>Information Message</label>
+                    <textarea id="editMessage" rows="5" style="width:100%;padding:14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:white;outline:none;"></textarea>
+                </div>
 
-            <button id="saveChanges">
+                <div style="margin-top:18px;">
+                    <label>Information Link</label>
+                    <input id="editInfoLink" type="url" placeholder="https://...">
+                </div>
 
-                💾 Save Changes
+                <div style="margin-top:18px;">
+                    <label>View Application Link</label>
+                    <input id="editViewLink" type="url" placeholder="https://...">
+                </div>
 
-            </button>
+                <button id="saveApplicantBtn" style="margin-top:24px;width:100%;padding:16px;border:none;border-radius:16px;background:#c5a880;color:#111827;font-weight:800;font-size:1rem;cursor:pointer;transition:all 0.2s ease;">
+                    SAVE CHANGES
+                </button>
+            </section>
 
-        </section>
+        </main>
+    </div>
 
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import {
+            getFirestore,
+            collection,
+            onSnapshot,
+            doc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        <!-- Applicant Documents -->
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsZbX8doOr6DxT7C9p8SK6YReKKlyVcNI",
+            authDomain: "hyatt-regency-afc7e.firebaseapp.com",
+            projectId: "hyatt-regency-afc7e",
+            storageBucket: "hyatt-regency-afc7e.firebasestorage.app",
+            messagingSenderId: "636460619228",
+            appId: "1:636460619228:web:5734324ff28ca738f4eb19",
+            measurementId: "G-K5KTLSKDRN"
+        };
 
-        <section class="card">
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-            <h2>📂 Applicant Documents</h2>
+        const ADMIN_EMAIL = "fransescomarie@gmail.com";
 
-            <div class="document-box">
+        const loginBox = document.getElementById("adminLogin");
+        const adminPanel = document.getElementById("adminPanel");
+        const loginMsg = document.getElementById("adminLoginMsg");
 
-                <p id="documentStatus">
-                    No documents uploaded yet.
-                </p>
+        const allApplicantsDiv = document.getElementById("allApplicants");
+        const newApplicantsDiv = document.getElementById("newApplicants");
+        const searchInput = document.getElementById("searchApplicant");
 
-                <a
-                    id="documentLink"
-                    href="#"
-                    target="_blank"
-                    class="document-btn"
-                    style="display:none;">
+        const totalApplicantsEl = document.getElementById("totalApplicants");
+        const pendingApplicantsEl = document.getElementById("pendingApplicants");
+        const approvedApplicantsEl = document.getElementById("approvedApplicants");
+        const rejectedApplicantsEl = document.getElementById("rejectedApplicants");
 
-                    📄 View Uploaded Document
+        let applicantsCache = [];
+        let selectedApplicantId = null;
 
-                </a>
+        // Login Handler
+        document.getElementById("adminLoginBtn").onclick = async () => {
+            const email = document.getElementById("adminEmail").value.trim();
+            const password = document.getElementById("adminPassword").value;
 
-            </div>
+            loginMsg.innerText = "";
 
-        </section>
+            if (email !== ADMIN_EMAIL) {
+                loginMsg.innerText = "Unauthorized admin email.";
+                return;
+            }
 
-    </main>
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginBox.style.display = "none";
+                adminPanel.style.display = "flex";
 
-</div>
+                loadApplicants();
+            } catch (error) {
+                loginMsg.innerText = "Invalid email or password.";
+            }
+        };
 
-<!-- ADD FIREBASE AND admin.js HERE -->
+        // Logout
+        document.querySelector(".logout").onclick = async () => {
+            await signOut(auth);
+            window.location.href = "index.html";
+        };
 
-<script type="module" src="admin.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        // Realtime Data Loader
+        function loadApplicants() {
+            const applicantsRef = collection(db, "Applicants");
 
-import {
-    getAuth,
-    signInWithEmailAndPassword,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+            onSnapshot(applicantsRef, (snapshot) => {
+                applicantsCache = [];
 
-import {
-    getFirestore,
-    collection,
-    onSnapshot,
-    doc,
-    updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+                snapshot.forEach((docSnap) => {
+                    applicantsCache.push({
+                        id: docSnap.id,
+                        ...docSnap.data()
+                    });
+                });
 
-// Firebase config
-const firebaseConfig = {
-    apiKey: "AIzaSyCsZbX8doOr6DxT7C9p8SK6YReKKlyVcNI",
-    authDomain: "hyatt-regency-afc7e.firebaseapp.com",
-    projectId: "hyatt-regency-afc7e",
-    storageBucket: "hyatt-regency-afc7e.firebasestorage.app",
-    messagingSenderId: "636460619228",
-    appId: "1:636460619228:web:5734324ff28ca738f4eb19",
-    measurementId: "G-K5KTLSKDRN"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Allowed admin email
-const ADMIN_EMAIL = "fransescomarie@gmail.com";
-
-const loginBox = document.getElementById("adminLogin");
-const adminPanel = document.getElementById("adminPanel");
-const loginMsg = document.getElementById("adminLoginMsg");
-
-document.getElementById("adminLoginBtn").onclick = async () => {
-    const email = document.getElementById("adminEmail").value.trim();
-    const password = document.getElementById("adminPassword").value;
-
-    loginMsg.innerText = "";
-
-    if (email !== ADMIN_EMAIL) {
-        loginMsg.innerText = "Unauthorized admin email.";
-        return;
-    }
-
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-
-        loginBox.style.display = "none";
-        adminPanel.style.display = "flex";
-
-        loadApplicants();
-
-    } catch (error) {
-        loginMsg.innerText = "Invalid email or password.";
-    }
-};
-
-// Logout button
-document.querySelector(".logout").onclick = async () => {
-    await signOut(auth);
-    window.location.href = "index.html";
-};
-
-let applicantsCache = [];
-
-// Load all applicants in real time
-function loadApplicants() {
-    const applicantsRef = collection(db, "Applicants");
-
-    onSnapshot(applicantsRef, (snapshot) => {
-        applicantsCache = [];
-
-        snapshot.forEach((docSnap) => {
-            applicantsCache.push({
-                id: docSnap.id,
-                ...docSnap.data()
+                renderApplicants(applicantsCache);
+                renderNewApplicant(applicantsCache);
+                updateStatistics(applicantsCache);
             });
+        }
+
+        // Stats Update
+        function updateStatistics(applicants) {
+            totalApplicantsEl.innerText = applicants.length;
+
+            let pending = 0;
+            let approved = 0;
+            let rejected = 0;
+
+            applicants.forEach(app => {
+                const status = (app.applicationStatus || "").toLowerCase();
+                if (status.includes("approved")) approved++;
+                else if (status.includes("rejected")) rejected++;
+                else pending++;
+            });
+
+            pendingApplicantsEl.innerText = pending;
+            approvedApplicantsEl.innerText = approved;
+            rejectedApplicantsEl.innerText = rejected;
+        }
+
+        // 1. Render ONLY ONE latest applicant in "Most Recent Applicant"
+        function renderNewApplicant(applicants) {
+            if (!applicants || applicants.length === 0) {
+                newApplicantsDiv.innerHTML = '<div class="empty-state">No recent applicants</div>';
+                return;
+            }
+
+            // Get the absolute newest applicant (last element in array)
+            const latestApp = applicants[applicants.length - 1];
+            const status = latestApp.applicationStatus || "Pending";
+
+            let statusClass = "status-pending";
+            if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
+            if (status.toLowerCase().includes("rejected")) statusClass = "status-rejected";
+
+            newApplicantsDiv.innerHTML = `
+                <div class="applicant-item">
+                    <div class="applicant-info">
+                        <div class="applicant-name" style="font-size:1.05rem;">${latestApp.fullName || 'No Name'}</div>
+                        <div class="applicant-meta">${latestApp.email || ''} • ${latestApp.phone || ''}</div>
+                        <div class="applicant-meta" style="color:var(--gold); font-size:0.8rem; margin-top:2px;">
+                            Applied: ${latestApp.dateApplied || 'Just now'}
+                        </div>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+                        <span class="status-badge ${statusClass}">${status}</span>
+                        <button class="open-btn" onclick="openApplicant('${latestApp.id}')">
+                            Open
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 2. Render All Applicants
+        function renderApplicants(applicants) {
+            if (applicants.length === 0) {
+                allApplicantsDiv.innerHTML = '<div class="empty-state">No applicants found</div>';
+                return;
+            }
+
+            allApplicantsDiv.innerHTML = applicants.map(app => {
+                const status = app.applicationStatus || "Pending";
+
+                let statusClass = "status-pending";
+                if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
+                if (status.toLowerCase().includes("rejected")) statusClass = "status-rejected";
+
+                return `
+                    <div class="applicant-item">
+                        <div class="applicant-info">
+                            <div class="applicant-name">${app.fullName || 'No Name'}</div>
+                            <div class="applicant-meta">${app.email || ''} | ${app.phone || ''}</div>
+                        </div>
+
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+                            <span class="status-badge ${statusClass}">${status}</span>
+                            <button class="open-btn" onclick="openApplicant('${app.id}')">
+                                Open
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Search Filter
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = applicantsCache.filter(app =>
+                (app.fullName || '').toLowerCase().includes(term) ||
+                (app.email || '').toLowerCase().includes(term) ||
+                (app.phone || '').toLowerCase().includes(term)
+            );
+            renderApplicants(filtered);
         });
 
-        renderApplicants(applicantsCache);
-        renderNewApplicants(applicantsCache);
-        updateStatistics(applicantsCache);
-    });
-}
+        // Open Applicant Editor
+        window.openApplicant = function(id) {
+            const applicant = applicantsCache.find(app => app.id === id);
+            if (!applicant) return;
 
-// Statistics
-function updateStatistics(applicants) {
-    totalApplicantsEl.innerText = applicants.length;
+            selectedApplicantId = id;
 
-    let pending = 0;
-    let approved = 0;
-    let rejected = 0;
+            document.getElementById("editorSection").style.display = "block";
 
-    applicants.forEach(app => {
-        const status = (app.applicationStatus || "").toLowerCase();
+            document.getElementById("editName").value = applicant.fullName || "";
+            document.getElementById("editEmail").value = applicant.email || "";
+            document.getElementById("editPhone").value = applicant.phone || "";
+            document.getElementById("editCountry").value = applicant.country || "";
+            document.getElementById("editEducation").value = applicant.education || "";
+            document.getElementById("editOccupation").value = applicant.occupation || "";
 
-        if (status.includes("approved")) approved++;
-        else if (status.includes("rejected")) rejected++;
-        else pending++;
-    });
+            document.getElementById("editStatus").value = applicant.applicationStatus || "Pending";
+            document.getElementById("editCode").value = applicant.applicationCode || "";
+            document.getElementById("editDate").value = applicant.dateApplied || "";
+            document.getElementById("editMessage").value = applicant.infoMessage || "";
+            document.getElementById("editInfoLink").value = applicant.infoLink || "";
+            document.getElementById("editViewLink").value = applicant.viewAppLink || "";
 
-    pendingApplicantsEl.innerText = pending;
-    approvedApplicantsEl.innerText = approved;
-    rejectedApplicantsEl.innerText = rejected;
-}
+            document.getElementById("editorSection").scrollIntoView({ behavior: "smooth" });
+        };
 
-// Render all applicants
-function renderApplicants(applicants) {
-    if (applicants.length === 0) {
-        allApplicantsDiv.innerHTML =
-            '<div class="empty-state">No applicants found</div>';
-        return;
-    }
+        // 3. Save Changes to Firebase & Display Pop-Up
+        document.getElementById("saveApplicantBtn").addEventListener("click", async () => {
+            if (!selectedApplicantId) {
+                alert("Please select an applicant first.");
+                return;
+            }
 
-    allApplicantsDiv.innerHTML = applicants.map(app => {
-        const status = app.applicationStatus || "Pending";
+            const saveBtn = document.getElementById("saveApplicantBtn");
+            saveBtn.disabled = true;
+            saveBtn.innerText = "SAVING...";
 
-        let statusClass = "status-pending";
-        if (status.toLowerCase().includes("approved"))
-            statusClass = "status-approved";
-        if (status.toLowerCase().includes("rejected"))
-            statusClass = "status-rejected";
+            try {
+                const docRef = doc(db, "Applicants", selectedApplicantId);
 
-        return `
-            <div class="applicant-item">
-                <div class="applicant-info">
-                    <div class="applicant-name">${app.fullName || 'No Name'}</div>
-                    <div class="applicant-meta">${app.email || ''}</div>
-                    <div class="applicant-meta">${app.phone || ''}</div>
-                </div>
+                await updateDoc(docRef, {
+                    applicationStatus: document.getElementById("editStatus").value,
+                    applicationCode: document.getElementById("editCode").value.trim(),
+                    dateApplied: document.getElementById("editDate").value.trim(),
+                    infoMessage: document.getElementById("editMessage").value,
+                    infoLink: document.getElementById("editInfoLink").value.trim(),
+                    viewAppLink: document.getElementById("editViewLink").value.trim()
+                });
 
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
-                    <span class="status-badge ${statusClass}">${status}</span>
-                    <button class="open-btn" onclick="openApplicant('${app.id}')">
-                        Open
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
+                showSuccessModal("Updated Successfully!");
 
-// Render newest applicants (latest 5)
-function renderNewApplicants(applicants) {
-    const newest = [...applicants].slice(-5).reverse();
+            } catch (error) {
+                console.error("Error updating applicant:", error);
+                alert("Error updating: " + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerText = "SAVE CHANGES";
+            }
+        });
 
-    if (newest.length === 0) {
-        newApplicantsDiv.innerHTML =
-            '<div class="empty-state">No new applicants</div>';
-        return;
-    }
+        // Toast Popup Helper
+        function showSuccessModal(message) {
+            const toast = document.getElementById("toastPopup");
+            document.getElementById("toastMsg").innerText = message;
 
-    newApplicantsDiv.innerHTML = newest.map(app => `
-        <div class="applicant-item">
-            <div class="applicant-info">
-                <div class="applicant-name">${app.fullName || 'No Name'}</div>
-                <div class="applicant-meta">${app.email || ''}</div>
-            </div>
+            toast.classList.add("show");
 
-            <button class="open-btn" onclick="openApplicant('${app.id}')">
-                Open
-            </button>
-        </div>
-    `).join('');
-}
-
-const allApplicantsDiv = document.getElementById("allApplicants");
-const newApplicantsDiv = document.getElementById("newApplicants");
-
-const searchInput = document.getElementById("searchApplicant");
-
-const totalApplicantsEl = document.getElementById("totalApplicants");
-const pendingApplicantsEl = document.getElementById("pendingApplicants");
-const approvedApplicantsEl = document.getElementById("approvedApplicants");
-const rejectedApplicantsEl = document.getElementById("rejectedApplicants");
-
-// Search applicants
-searchInput.addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-
-    const filtered = applicantsCache.filter(app =>
-        (app.fullName || '').toLowerCase().includes(term) ||
-        (app.email || '').toLowerCase().includes(term) ||
-        (app.phone || '').toLowerCase().includes(term)
-    );
-
-    renderApplicants(filtered);
-});
-
-let selectedApplicantId = null;
-
-window.openApplicant = function(id) {
-
-    const applicant = applicantsCache.find(app => app.id === id);
-
-    if (!applicant) return;
-
-    selectedApplicantId = id;
-
-    // Show editor
-    document.getElementById("editorSection").style.display = "block";
-
-    // Fill fields
-    document.getElementById("editName").value = applicant.fullName || "";
-    document.getElementById("editEmail").value = applicant.email || "";
-    document.getElementById("editPhone").value = applicant.phone || "";
-    document.getElementById("editCountry").value = applicant.country || "";
-    document.getElementById("editEducation").value = applicant.education || "";
-    document.getElementById("editOccupation").value = applicant.occupation || "";
-
-    document.getElementById("editStatus").value =
-        applicant.applicationStatus || "Pending";
-
-    document.getElementById("editCode").value =
-        applicant.applicationCode || "";
-
-    document.getElementById("editDate").value =
-        applicant.dateApplied || "";
-
-    document.getElementById("editMessage").value =
-        applicant.infoMessage || "";
-
-    document.getElementById("editInfoLink").value =
-        applicant.infoLink || "";
-
-    document.getElementById("editViewLink").value =
-        applicant.viewAppLink || "";
-
-    // Scroll to editor
-    document.getElementById("editorSection")
-        .scrollIntoView({ behavior: "smooth" });
-};
-
-</script>
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
