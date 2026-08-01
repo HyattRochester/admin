@@ -180,7 +180,7 @@ body{
 /* Applicant item */
 .applicant-item{
     display:flex;
-    justify-space-between;
+    justify-content:space-between;
     align-items:center;
     gap:12px;
     padding:14px 0;
@@ -237,14 +237,87 @@ body{
     background:var(--gold);
     color:#111827;
     border:none;
-    padding:10px 14px;
-    border-radius:12px;
+    padding:8px 14px;
+    border-radius:10px;
     font-weight:700;
     cursor:pointer;
 }
 
 .open-btn:hover{
     filter:brightness(1.05);
+}
+
+/* Interview Styling */
+.interview-btn {
+    background: rgba(197, 168, 128, 0.15);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.interview-btn:hover {
+    background: var(--gold);
+    color: #111827;
+}
+
+.no-interview-badge {
+    color: var(--muted);
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.modal-card {
+    background: #111827;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 650px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+}
+
+.interview-qa-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.interview-qa-item label {
+    color: var(--gold);
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.interview-qa-item div {
+    color: var(--text);
+    font-size: 0.95rem;
 }
 
 .empty-state{
@@ -281,7 +354,7 @@ body{
     color: white;
 }
 
-/* Custom Success Toast Popup */
+/* Toast Popup */
 .toast-popup {
     position: fixed;
     top: 30px;
@@ -346,6 +419,26 @@ body{
         <div>
             <div style="font-weight: 700; font-size: 0.95rem; color: #bbf7d0;">Success</div>
             <div style="font-size: 0.85rem; color: var(--muted);" id="toastMsg">Updated Successfully!</div>
+        </div>
+    </div>
+
+    <!-- Interview Modal -->
+    <div id="interviewModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="color:var(--gold); font-size:1.3rem;">🎙️ Interview Submission</h2>
+                <button onclick="closeInterviewModal()" style="background:none; border:none; color:var(--muted); font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div id="modalApplicantDetails" style="margin-bottom:20px; color:var(--muted); font-size:0.9rem; border-bottom:1px solid var(--border); padding-bottom:12px;"></div>
+            
+            <div id="interviewQAContent">
+                <!-- Interview Q&A renders here -->
+            </div>
+
+            <button onclick="closeInterviewModal()" style="margin-top:20px; width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white; border-radius:12px; font-weight:700; cursor:pointer;">
+                Close
+            </button>
         </div>
     </div>
 
@@ -421,7 +514,7 @@ body{
                     placeholder="Search applicant by name, email or phone...">
             </section>
 
-            <!-- New Applicants (Shows strictly ONLY the newest applicant) -->
+            <!-- Most Recent Applicant -->
             <section class="card">
                 <h2>🆕 Most Recent Applicant</h2>
                 <div id="newApplicants">
@@ -516,273 +609,388 @@ body{
         </main>
     </div>
 
-    <!-- Firebase Script -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import {
-            getAuth,
-            signInWithEmailAndPassword,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import {
-            getFirestore,
-            collection,
-            onSnapshot,
-            doc,
-            updateDoc
-        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+   <!-- Firebase Script -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+        getFirestore,
+        collection,
+        onSnapshot,
+        doc,
+        updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCsZbX8doOr6DxT7C9p8SK6YReKKlyVcNI",
-            authDomain: "hyatt-regency-afc7e.firebaseapp.com",
-            projectId: "hyatt-regency-afc7e",
-            storageBucket: "hyatt-regency-afc7e.firebasestorage.app",
-            messagingSenderId: "636460619228",
-            appId: "1:636460619228:web:5734324ff28ca738f4eb19",
-            measurementId: "G-K5KTLSKDRN"
-        };
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyCsZbX8doOr6DxT7C9p8SK6YReKKlyVcNI",
+        authDomain: "hyatt-regency-afc7e.firebaseapp.com",
+        projectId: "hyatt-regency-afc7e",
+        storageBucket: "hyatt-regency-afc7e.firebasestorage.app",
+        messagingSenderId: "636460619228",
+        appId: "1:636460619228:web:5734324ff28ca738f4eb19",
+        measurementId: "G-K5KTLSKDRN"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        const ADMIN_EMAIL = "fransescomarie@gmail.com";
+    const ADMIN_EMAIL = "fransescomarie@gmail.com";
 
-        const loginBox = document.getElementById("adminLogin");
-        const adminPanel = document.getElementById("adminPanel");
-        const loginMsg = document.getElementById("adminLoginMsg");
+    const loginBox = document.getElementById("adminLogin");
+    const adminPanel = document.getElementById("adminPanel");
+    const loginMsg = document.getElementById("adminLoginMsg");
 
-        const allApplicantsDiv = document.getElementById("allApplicants");
-        const newApplicantsDiv = document.getElementById("newApplicants");
-        const searchInput = document.getElementById("searchApplicant");
+    const allApplicantsDiv = document.getElementById("allApplicants");
+    const newApplicantsDiv = document.getElementById("newApplicants");
+    const searchInput = document.getElementById("searchApplicant");
 
-        const totalApplicantsEl = document.getElementById("totalApplicants");
-        const pendingApplicantsEl = document.getElementById("pendingApplicants");
-        const approvedApplicantsEl = document.getElementById("approvedApplicants");
-        const rejectedApplicantsEl = document.getElementById("rejectedApplicants");
+    const totalApplicantsEl = document.getElementById("totalApplicants");
+    const pendingApplicantsEl = document.getElementById("pendingApplicants");
+    const approvedApplicantsEl = document.getElementById("approvedApplicants");
+    const rejectedApplicantsEl = document.getElementById("rejectedApplicants");
 
-        let applicantsCache = [];
-        let selectedApplicantId = null;
+    let applicantsCache = [];
+    let interviewsCache = [];
+    let selectedApplicantId = null;
 
-        // Login Handler
-        document.getElementById("adminLoginBtn").onclick = async () => {
-            const email = document.getElementById("adminEmail").value.trim();
-            const password = document.getElementById("adminPassword").value;
+    // Login Handler
+    document.getElementById("adminLoginBtn").onclick = async () => {
+        const email = document.getElementById("adminEmail").value.trim();
+        const password = document.getElementById("adminPassword").value;
 
-            loginMsg.innerText = "";
+        loginMsg.innerText = "";
 
-            if (email !== ADMIN_EMAIL) {
-                loginMsg.innerText = "Unauthorized admin email.";
-                return;
-            }
+        if (email !== ADMIN_EMAIL) {
+            loginMsg.innerText = "Unauthorized admin email.";
+            return;
+        }
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                loginBox.style.display = "none";
-                adminPanel.style.display = "flex";
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            loginBox.style.display = "none";
+            adminPanel.style.display = "flex";
 
-                loadApplicants();
-            } catch (error) {
-                loginMsg.innerText = "Invalid email or password.";
-            }
-        };
+            loadInterviews();
+            loadApplicants();
+        } catch (error) {
+            loginMsg.innerText = "Invalid email or password.";
+        }
+    };
 
-        // Logout
-        document.querySelector(".logout").onclick = async () => {
-            await signOut(auth);
-            window.location.href = "index.html";
-        };
+    // Logout
+    document.querySelector(".logout").onclick = async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    };
 
-        // Realtime Data Loader
-        function loadApplicants() {
-            const applicantsRef = collection(db, "Applicants");
-
-            onSnapshot(applicantsRef, (snapshot) => {
-                applicantsCache = [];
-
-                snapshot.forEach((docSnap) => {
-                    applicantsCache.push({
-                        id: docSnap.id,
-                        ...docSnap.data()
-                    });
+    // Realtime Interviews Loader (Capitalized collection name from your screenshot)
+    function loadInterviews() {
+        const interviewsRef = collection(db, "Interviews");
+        onSnapshot(interviewsRef, (snapshot) => {
+            interviewsCache = [];
+            snapshot.forEach((docSnap) => {
+                interviewsCache.push({
+                    id: docSnap.id,
+                    ...docSnap.data()
                 });
-
-                renderApplicants(applicantsCache);
-                renderNewApplicant(applicantsCache);
-                updateStatistics(applicantsCache);
             });
+            renderApplicants(applicantsCache);
+            renderNewApplicant(applicantsCache);
+        }, (err) => {
+            console.error("Error loading Interviews collection:", err);
+        });
+    }
+
+    // Match applicant to interview using UID, Document ID, Email, or Full Name
+    function getApplicantInterview(applicant) {
+        if (!applicant) return null;
+        return interviewsCache.find(i => {
+            const uidMatch = (i.uid && applicant.uid && i.uid === applicant.uid) ||
+                             (i.uid && i.uid === applicant.id) ||
+                             (i.id === applicant.id);
+
+            const emailMatch = i.email && applicant.email && 
+                               i.email.toLowerCase().trim() === applicant.email.toLowerCase().trim();
+
+            const nameMatch = (i.fullName && applicant.fullName && 
+                               i.fullName.toLowerCase().trim() === applicant.fullName.toLowerCase().trim()) ||
+                              (i.fullName && applicant.fullName && 
+                               i.fullName.toLowerCase().trim().includes(applicant.fullName.toLowerCase().trim()));
+
+            return uidMatch || emailMatch || nameMatch;
+        });
+    }
+
+    // Realtime Applicants Data Loader
+    function loadApplicants() {
+        const applicantsRef = collection(db, "Applicants");
+
+        onSnapshot(applicantsRef, (snapshot) => {
+            applicantsCache = [];
+
+            snapshot.forEach((docSnap) => {
+                applicantsCache.push({
+                    id: docSnap.id,
+                    ...docSnap.data()
+                });
+            });
+
+            renderApplicants(applicantsCache);
+            renderNewApplicant(applicantsCache);
+            updateStatistics(applicantsCache);
+        });
+    }
+
+    // Stats Update
+    function updateStatistics(applicants) {
+        totalApplicantsEl.innerText = applicants.length;
+
+        let pending = 0;
+        let approved = 0;
+        let rejected = 0;
+
+        applicants.forEach(app => {
+            const status = (app.applicationStatus || "").toLowerCase();
+            if (status.includes("approved")) approved++;
+            else if (status.includes("rejected")) rejected++;
+            else pending++;
+        });
+
+        pendingApplicantsEl.innerText = pending;
+        approvedApplicantsEl.innerText = approved;
+        rejectedApplicantsEl.innerText = rejected;
+    }
+
+    // Render ONLY ONE latest applicant in "Most Recent Applicant"
+    function renderNewApplicant(applicants) {
+        if (!applicants || applicants.length === 0) {
+            newApplicantsDiv.innerHTML = '<div class="empty-state">No recent applicants</div>';
+            return;
         }
 
-        // Stats Update
-        function updateStatistics(applicants) {
-            totalApplicantsEl.innerText = applicants.length;
+        const latestApp = applicants[applicants.length - 1];
+        const status = latestApp.applicationStatus || "Pending";
 
-            let pending = 0;
-            let approved = 0;
-            let rejected = 0;
+        let statusClass = "status-pending";
+        if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
+        if (status.toLowerCase().includes("rejected")) statusClass = "status-rejected";
 
-            applicants.forEach(app => {
-                const status = (app.applicationStatus || "").toLowerCase();
-                if (status.includes("approved")) approved++;
-                else if (status.includes("rejected")) rejected++;
-                else pending++;
-            });
+        // Check Interview Status
+        const interviewData = getApplicantInterview(latestApp);
+        const interviewUI = interviewData 
+            ? `<button class="interview-btn" onclick="openInterviewModal('${latestApp.id}')">🎙️ View Interview</button>`
+            : `<span class="no-interview-badge">Not submitted</span>`;
 
-            pendingApplicantsEl.innerText = pending;
-            approvedApplicantsEl.innerText = approved;
-            rejectedApplicantsEl.innerText = rejected;
-        }
-
-        // 1. Render ONLY ONE latest applicant in "Most Recent Applicant"
-        function renderNewApplicant(applicants) {
-            if (!applicants || applicants.length === 0) {
-                newApplicantsDiv.innerHTML = '<div class="empty-state">No recent applicants</div>';
-                return;
-            }
-
-            // Get the absolute newest applicant (last element in array)
-            const latestApp = applicants[applicants.length - 1];
-            const status = latestApp.applicationStatus || "Pending";
-
-            let statusClass = "status-pending";
-            if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
-            if (status.toLowerCase().includes("rejected")) statusClass = "status-rejected";
-
-            newApplicantsDiv.innerHTML = `
-                <div class="applicant-item">
-                    <div class="applicant-info">
-                        <div class="applicant-name" style="font-size:1.05rem;">${latestApp.fullName || 'No Name'}</div>
-                        <div class="applicant-meta">${latestApp.email || ''} • ${latestApp.phone || ''}</div>
-                        <div class="applicant-meta" style="color:var(--gold); font-size:0.8rem; margin-top:2px;">
-                            Applied: ${latestApp.dateApplied || 'Just now'}
-                        </div>
+        newApplicantsDiv.innerHTML = `
+            <div class="applicant-item">
+                <div class="applicant-info">
+                    <div class="applicant-name" style="font-size:1.05rem;">${latestApp.fullName || 'No Name'}</div>
+                    <div class="applicant-meta">${latestApp.email || ''} • ${latestApp.phone || ''}</div>
+                    <div class="applicant-meta" style="color:var(--gold); font-size:0.8rem; margin-top:2px;">
+                        Applied: ${latestApp.dateApplied || 'Just now'}
                     </div>
+                </div>
 
-                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
-                        <span class="status-badge ${statusClass}">${status}</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                    <span class="status-badge ${statusClass}">${status}</span>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        ${interviewUI}
                         <button class="open-btn" onclick="openApplicant('${latestApp.id}')">
                             Open
                         </button>
                     </div>
                 </div>
-            `;
+            </div>
+        `;
+    }
+
+    // Render All Applicants (Most Recent FIRST)
+    function renderApplicants(applicants) {
+        if (applicants.length === 0) {
+            allApplicantsDiv.innerHTML = '<div class="empty-state">No applicants found</div>';
+            return;
         }
 
-        // 2. Render All Applicants
-        function renderApplicants(applicants) {
-            if (applicants.length === 0) {
-                allApplicantsDiv.innerHTML = '<div class="empty-state">No applicants found</div>';
-                return;
-            }
+        const sortedApplicants = [...applicants].reverse();
 
-            allApplicantsDiv.innerHTML = applicants.map(app => {
-                const status = app.applicationStatus || "Pending";
+        allApplicantsDiv.innerHTML = sortedApplicants.map(app => {
+            const status = app.applicationStatus || "Pending";
 
-                let statusClass = "status-pending";
-                if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
-                if (status.toLowerCase().includes("rejected")) statusClass = "status-rejected";
+            let statusClass = "status-pending";
+            if (status.toLowerCase().includes("approved")) statusClass = "status-approved";
+            if (status.toLowerCase().includes("rejected")) statusClass = "status-rejected";
 
-                return `
-                    <div class="applicant-item">
-                        <div class="applicant-info">
-                            <div class="applicant-name">${app.fullName || 'No Name'}</div>
-                            <div class="applicant-meta">${app.email || ''} | ${app.phone || ''}</div>
-                        </div>
+            // Check Interview Status
+            const interviewData = getApplicantInterview(app);
+            const interviewUI = interviewData 
+                ? `<button class="interview-btn" onclick="openInterviewModal('${app.id}')">🎙️ View Interview</button>`
+                : `<span class="no-interview-badge">Not submitted</span>`;
 
-                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
-                            <span class="status-badge ${statusClass}">${status}</span>
+            return `
+                <div class="applicant-item">
+                    <div class="applicant-info">
+                        <div class="applicant-name">${app.fullName || 'No Name'}</div>
+                        <div class="applicant-meta">${app.email || ''} | ${app.phone || ''}</div>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                        <span class="status-badge ${statusClass}">${status}</span>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            ${interviewUI}
                             <button class="open-btn" onclick="openApplicant('${app.id}')">
                                 Open
                             </button>
                         </div>
                     </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Search Filter
+    searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = applicantsCache.filter(app =>
+            (app.fullName || '').toLowerCase().includes(term) ||
+            (app.email || '').toLowerCase().includes(term) ||
+            (app.phone || '').toLowerCase().includes(term)
+        );
+        renderApplicants(filtered);
+    });
+
+    // Open Interview Modal (Handles nested responses map: q1, q2, q3...)
+    window.openInterviewModal = function(applicantId) {
+        const applicant = applicantsCache.find(a => a.id === applicantId);
+        const interview = getApplicantInterview(applicant);
+
+        if (!interview) {
+            alert("No interview submission found for this applicant.");
+            return;
+        }
+
+        document.getElementById("modalApplicantDetails").innerHTML = `
+            Applicant: <strong style="color:white;">${interview.fullName || applicant?.fullName || 'N/A'}</strong>
+            <br>Position: <span style="color:var(--gold);">${interview.appliedPosition || 'N/A'}</span>
+        `;
+
+        const qaContainer = document.getElementById("interviewQAContent");
+        qaContainer.innerHTML = "";
+
+        // Extracts response map if present (as in your Firestore schema)
+        const responseData = interview.responses || interview;
+
+        const ignoredKeys = ['id', 'applicantId', 'email', 'timestamp', 'createdAt', 'uid', 'fullName', 'appliedPosition', 'responses'];
+        
+        let hasContent = false;
+        for (const [key, value] of Object.entries(responseData)) {
+            if (!ignoredKeys.includes(key) && value) {
+                hasContent = true;
+                
+                // Formats q1 -> Question 1, q2 -> Question 2
+                let labelTitle = key;
+                if (/^q\d+$/i.test(key)) {
+                    labelTitle = key.replace(/^q/i, 'Question ');
+                } else {
+                    labelTitle = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                }
+
+                qaContainer.innerHTML += `
+                    <div class="interview-qa-item">
+                        <label>${labelTitle}</label>
+                        <div>${value}</div>
+                    </div>
                 `;
-            }).join('');
+            }
         }
 
-        // Search Filter
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = applicantsCache.filter(app =>
-                (app.fullName || '').toLowerCase().includes(term) ||
-                (app.email || '').toLowerCase().includes(term) ||
-                (app.phone || '').toLowerCase().includes(term)
-            );
-            renderApplicants(filtered);
-        });
-
-        // Open Applicant Editor
-        window.openApplicant = function(id) {
-            const applicant = applicantsCache.find(app => app.id === id);
-            if (!applicant) return;
-
-            selectedApplicantId = id;
-
-            document.getElementById("editorSection").style.display = "block";
-
-            document.getElementById("editName").value = applicant.fullName || "";
-            document.getElementById("editEmail").value = applicant.email || "";
-            document.getElementById("editPhone").value = applicant.phone || "";
-            document.getElementById("editCountry").value = applicant.country || "";
-            document.getElementById("editEducation").value = applicant.education || "";
-            document.getElementById("editOccupation").value = applicant.occupation || "";
-
-            document.getElementById("editStatus").value = applicant.applicationStatus || "Pending";
-            document.getElementById("editCode").value = applicant.applicationCode || "";
-            document.getElementById("editDate").value = applicant.dateApplied || "";
-            document.getElementById("editMessage").value = applicant.infoMessage || "";
-            document.getElementById("editInfoLink").value = applicant.infoLink || "";
-            document.getElementById("editViewLink").value = applicant.viewAppLink || "";
-
-            document.getElementById("editorSection").scrollIntoView({ behavior: "smooth" });
-        };
-
-        // 3. Save Changes to Firebase & Display Pop-Up
-        document.getElementById("saveApplicantBtn").addEventListener("click", async () => {
-            if (!selectedApplicantId) {
-                alert("Please select an applicant first.");
-                return;
-            }
-
-            const saveBtn = document.getElementById("saveApplicantBtn");
-            saveBtn.disabled = true;
-            saveBtn.innerText = "SAVING...";
-
-            try {
-                const docRef = doc(db, "Applicants", selectedApplicantId);
-
-                await updateDoc(docRef, {
-                    applicationStatus: document.getElementById("editStatus").value,
-                    applicationCode: document.getElementById("editCode").value.trim(),
-                    dateApplied: document.getElementById("editDate").value.trim(),
-                    infoMessage: document.getElementById("editMessage").value,
-                    infoLink: document.getElementById("editInfoLink").value.trim(),
-                    viewAppLink: document.getElementById("editViewLink").value.trim()
-                });
-
-                showSuccessModal("Updated Successfully!");
-
-            } catch (error) {
-                console.error("Error updating applicant:", error);
-                alert("Error updating: " + error.message);
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.innerText = "SAVE CHANGES";
-            }
-        });
-
-        // Toast Popup Helper
-        function showSuccessModal(message) {
-            const toast = document.getElementById("toastPopup");
-            document.getElementById("toastMsg").innerText = message;
-
-            toast.classList.add("show");
-
-            setTimeout(() => {
-                toast.classList.remove("show");
-            }, 3000);
+        if (!hasContent) {
+            qaContainer.innerHTML = `<div style="text-align:center; color:var(--muted); padding:20px;">Interview record has no detailed responses.</div>`;
         }
-    </script>
+
+        document.getElementById("interviewModal").style.display = "flex";
+    };
+
+    window.closeInterviewModal = function() {
+        document.getElementById("interviewModal").style.display = "none";
+    };
+
+    // Open Applicant Editor
+    window.openApplicant = function(id) {
+        const applicant = applicantsCache.find(app => app.id === id);
+        if (!applicant) return;
+
+        selectedApplicantId = id;
+
+        document.getElementById("editorSection").style.display = "block";
+
+        document.getElementById("editName").value = applicant.fullName || "";
+        document.getElementById("editEmail").value = applicant.email || "";
+        document.getElementById("editPhone").value = applicant.phone || "";
+        document.getElementById("editCountry").value = applicant.country || "";
+        document.getElementById("editEducation").value = applicant.education || "";
+        document.getElementById("editOccupation").value = applicant.occupation || "";
+
+        document.getElementById("editStatus").value = applicant.applicationStatus || "Pending";
+        document.getElementById("editCode").value = applicant.applicationCode || "";
+        document.getElementById("editDate").value = applicant.dateApplied || "";
+        document.getElementById("editMessage").value = applicant.infoMessage || "";
+        document.getElementById("editInfoLink").value = applicant.infoLink || "";
+        document.getElementById("editViewLink").value = applicant.viewAppLink || "";
+
+        document.getElementById("editorSection").scrollIntoView({ behavior: "smooth" });
+    };
+
+    // Save Changes
+    document.getElementById("saveApplicantBtn").addEventListener("click", async () => {
+        if (!selectedApplicantId) {
+            alert("Please select an applicant first.");
+            return;
+        }
+
+        const saveBtn = document.getElementById("saveApplicantBtn");
+        saveBtn.disabled = true;
+        saveBtn.innerText = "SAVING...";
+
+        try {
+            const docRef = doc(db, "Applicants", selectedApplicantId);
+
+            await updateDoc(docRef, {
+                applicationStatus: document.getElementById("editStatus").value,
+                applicationCode: document.getElementById("editCode").value.trim(),
+                dateApplied: document.getElementById("editDate").value.trim(),
+                infoMessage: document.getElementById("editMessage").value,
+                infoLink: document.getElementById("editInfoLink").value.trim(),
+                viewAppLink: document.getElementById("editViewLink").value.trim()
+            });
+
+            showSuccessModal("Updated Successfully!");
+
+        } catch (error) {
+            console.error("Error updating applicant:", error);
+            alert("Error updating: " + error.message);
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "SAVE CHANGES";
+        }
+    });
+
+    // Toast Helper
+    function showSuccessModal(message) {
+        const toast = document.getElementById("toastPopup");
+        document.getElementById("toastMsg").innerText = message;
+
+        toast.classList.add("show");
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 3000);
+    }
+</script>
 </body>
 </html>
